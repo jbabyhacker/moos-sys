@@ -1,4 +1,4 @@
-use moos_sys::MoosInterface;
+use moos_sys::{this, MoosInterface};
 use std::collections::HashMap;
 use std::os::raw::c_void;
 
@@ -44,8 +44,18 @@ impl MoosInterface for DemoMoosApp {
         true
     }
 
-    extern "C" fn on_start_up(_app: *mut c_void) -> bool {
+    extern "C" fn on_start_up(app: *mut c_void) -> bool {
         println!("onStartUp");
+        let this_app = moos_sys::this::<DemoMoosApp>(app);
+        let a: &mut moos_sys::MoosApp = this_app.app();
+        let mut food = moos_sys::MoosMessageData::DOUBLE(0.0);
+        let mut taste = moos_sys::MoosMessageData::STRING("");
+
+        a.get_config_param("Food", &mut food);
+        a.get_config_param("Taste", &mut taste);
+        println!("Food: {:?}", food);
+        println!("Taste: {:?}", taste);
+
         true
     }
 

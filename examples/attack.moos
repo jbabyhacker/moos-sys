@@ -1,0 +1,7 @@
+ExampleParam = 4
+
+ProcessConfig = eat
+{
+  Food = 6
+  Taste = good
+}

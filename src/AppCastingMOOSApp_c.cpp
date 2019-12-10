@@ -7,6 +7,7 @@ public:
     using AppCastingMOOSApp::Notify;
     using AppCastingMOOSApp::RegisterVariables;
     using AppCastingMOOSApp::Register;
+    using AppCastingMOOSApp::m_MissionReader;
 
     void *m_callbackTarget = nullptr;
     rust_bool_void_star_callback m_iterateCallback = nullptr;
@@ -125,4 +126,22 @@ bool MoosApp_register(MoosApp *v, const char *s_var, const double d_interval) {
 
     return v->Register(cppString, d_interval);
 }
+
+bool MoosApp_getDoubleAppConfigParam(MoosApp *v, const char *sName, double *d_var) {
+    std::string cppName(sName);
+    std::string cppValue;
+
+    return v->m_MissionReader.GetConfigurationParam(cppName, *d_var);
+}
+
+bool MoosApp_getStringAppConfigParam(MoosApp *v, const char *sName, char *s_var) {
+    std::string cppName(sName);
+    std::string cppValue;
+
+    bool result = v->m_MissionReader.GetConfigurationParam(cppName, cppValue);
+    s_var = strdup(const_cast<char*>(cppValue.c_str()));
+
+    return result;
+}
+
 }

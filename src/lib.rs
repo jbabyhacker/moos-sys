@@ -4,10 +4,11 @@
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
+use std::borrow::{Borrow, BorrowMut};
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::fmt::Debug;
-use std::os::raw::c_void;
+use std::os::raw::{c_char, c_void};
 use std::slice;
 
 /// Type to populate when sending data to the MOOSDB as well as populated when
@@ -122,6 +123,25 @@ impl MoosApp {
         let c_name = CString::new(name).unwrap();
 
         unsafe { MoosApp_register(self, c_name.as_ptr(), interval) }
+    }
+
+    ///
+    pub fn get_config_param(&mut self, name: &str, value: &mut MoosMessageData) {
+        let c_name = CString::new(name).unwrap();
+
+        match value {
+            MoosMessageData::DOUBLE(as_f64) => unsafe {
+                MoosApp_getDoubleAppConfigParam(self, c_name.as_ptr(), as_f64);
+            },
+            MoosMessageData::STRING(as_string) => {
+                let s_value = CString::new("").unwrap();
+                let bytes = s_value.into_bytes_with_nul();
+                let cchars: Vec<i8> = bytes.iter().map(|&b| b as i8).collect();
+                let value: *mut c_char = cchars.clone().as_mut_ptr();
+                unsafe { MoosApp_getStringAppConfigParam(self, c_name.as_ptr(), value) };
+                as_string.clone_from(&unsafe { CStr::from_ptr(value) }.to_str().unwrap());
+            }
+        }
     }
 }
 

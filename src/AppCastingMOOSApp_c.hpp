@@ -45,6 +45,10 @@ bool MoosApp_notifyString(MoosApp *v, const char *s_var, const char *s_val);
 
 bool MoosApp_register(MoosApp *v, const char *s_var, const double d_interval);
 
+bool MoosApp_getDoubleAppConfigParam(MoosApp *v, const char *sName, double *d_var);
+
+bool MoosApp_getStringAppConfigParam(MoosApp *v, const char *sName, char *s_var);
+
 #ifdef __cplusplus
 };
 #endif
