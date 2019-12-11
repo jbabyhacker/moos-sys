@@ -124,6 +124,8 @@ impl MoosApp {
         unsafe { MoosApp_register(self, c_name.as_ptr(), interval) }
     }
 
+    // TODO: Update to return an Option<MoosMessageData> or Error
+    /// Retrieves a global configuration param.
     pub fn global_param(&mut self, name: &str, value: &mut MoosMessageData) -> bool {
         let c_name = CString::new(name).unwrap();
 
@@ -147,7 +149,8 @@ impl MoosApp {
         }
     }
 
-    ///
+    // TODO: Update to return an Option<MoosMessageData> or Error
+    /// Retrieves an app specific configuration param.
     pub fn app_param(&mut self, name: &str, value: &mut MoosMessageData) -> bool {
         let c_name = CString::new(name).unwrap();
 
