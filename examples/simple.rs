@@ -1,4 +1,4 @@
-use moos_sys::{this, MoosInterface};
+use moos_sys::{MoosInterface};
 use std::collections::HashMap;
 use std::os::raw::c_void;
 
@@ -50,11 +50,14 @@ impl MoosInterface for DemoMoosApp {
         let a: &mut moos_sys::MoosApp = this_app.app();
         let mut food = moos_sys::MoosMessageData::DOUBLE(0.0);
         let mut taste = moos_sys::MoosMessageData::STRING("");
+        let mut example = moos_sys::MoosMessageData::DOUBLE(0.0);
 
-        a.get_config_param("Food", &mut food);
-        a.get_config_param("Taste", &mut taste);
+        a.app_param("Food", &mut food);
+        a.app_param("Taste", &mut taste);
+        a.global_param("ExampleParam", &mut example);
         println!("Food: {:?}", food);
         println!("Taste: {:?}", taste);
+        println!("Example: {:?}", example);
 
         true
     }
@@ -84,5 +87,5 @@ impl MoosInterface for DemoMoosApp {
 
 fn main() {
     let mut moos_app = DemoMoosApp::new();
-    moos_app.run("eat", "attack.moos");
+    moos_app.run("eat", "examples/attack.moos");
 }

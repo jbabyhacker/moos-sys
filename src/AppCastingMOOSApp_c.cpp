@@ -127,6 +127,27 @@ bool MoosApp_register(MoosApp *v, const char *s_var, const double d_interval) {
     return v->Register(cppString, d_interval);
 }
 
+bool MoosApp_getDoubleGlobalConfigParam(MoosApp *v, const char *sName, double *d_var) {
+    std::string cppName(sName);
+    std::string cppValue;
+
+    return v->m_MissionReader.GetValue(cppName, *d_var);
+}
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-parameter"
+bool MoosApp_getStringGlobalConfigParam(MoosApp *v, const char *sName, char *s_var) {
+#pragma GCC diagnostic pop
+
+    std::string cppName(sName);
+    std::string cppValue;
+
+    bool result = v->m_MissionReader.GetValue(cppName, cppValue);
+    s_var = strdup(const_cast<char*>(cppValue.c_str()));
+
+    return result;
+}
+
 bool MoosApp_getDoubleAppConfigParam(MoosApp *v, const char *sName, double *d_var) {
     std::string cppName(sName);
     std::string cppValue;
@@ -134,7 +155,11 @@ bool MoosApp_getDoubleAppConfigParam(MoosApp *v, const char *sName, double *d_va
     return v->m_MissionReader.GetConfigurationParam(cppName, *d_var);
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-parameter"
 bool MoosApp_getStringAppConfigParam(MoosApp *v, const char *sName, char *s_var) {
+#pragma GCC diagnostic pop
+
     std::string cppName(sName);
     std::string cppValue;
 
