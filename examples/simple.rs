@@ -1,4 +1,4 @@
-use moos_sys::{MoosInterface};
+use moos_sys::MoosInterface;
 use std::collections::HashMap;
 use std::os::raw::c_void;
 
