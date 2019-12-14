@@ -1,3 +1,5 @@
+//! Interface code to C++ binding. All unsafe code is isolated here.
+
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
@@ -8,7 +10,7 @@ use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::fmt::Debug;
 use std::os::raw::{c_char, c_void};
-use std::slice;
+use std::{path, slice};
 
 /// Type to populate when sending data to the MOOSDB as well as populated when
 /// mail is received from the MOOSDB.
@@ -28,7 +30,8 @@ pub trait MoosInterface {
     fn on_new_mail(app: *mut c_void, d: HashMap<String, MoosMessageData>) -> bool;
 
     /// Implementer of `MoosInterface` is required to provide a pointer to `MoosApp`
-    /// in the implementer's struct.
+    /// in the implementer's struct. Use the `to_app` helper function to populate
+    /// this function.
     fn app(&mut self) -> &'static mut MoosApp;
 
     /// Called when new mail is received from the MOOSDB. It is then repackaged
@@ -61,13 +64,13 @@ pub trait MoosInterface {
     }
 
     /// Runs the app with the given `name` and `mission` file.
-    fn run(&mut self, name: &str, mission: &str)
+    fn run(&mut self, name: &str, mission: &path::Path)
     where
         Self: std::marker::Sized,
     {
         let app: &mut MoosApp = self.app();
         app.set_target(self);
-        app.run(name, mission);
+        app.run(name, mission.to_str().unwrap());
     }
 }
 

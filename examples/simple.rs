@@ -87,5 +87,8 @@ impl MoosInterface for DemoMoosApp {
 
 fn main() {
     let mut moos_app = DemoMoosApp::new();
-    moos_app.run("eat", "examples/attack.moos");
+    let mut root = crate_root::root().unwrap();
+    root.push("examples");
+    root.push("attack.moos");
+    moos_app.run("eat", &root);
 }
