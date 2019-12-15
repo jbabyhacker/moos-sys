@@ -6,6 +6,7 @@
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
+use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::fmt::Debug;
@@ -74,6 +75,8 @@ pub trait MoosInterface {
     }
 }
 
+trait Asdf {}
+
 impl MoosApp {
     /// Allocates a new MoosApp.
     pub fn new<I: MoosInterface>() -> *mut Self {
@@ -127,53 +130,74 @@ impl MoosApp {
         unsafe { MoosApp_register(self, c_name.as_ptr(), interval) }
     }
 
-    // TODO: Update to return an Option<MoosMessageData> or Error
-    /// Retrieves a global configuration param.
-    pub fn global_param(&mut self, name: &str, value: &mut MoosMessageData) -> bool {
-        let c_name = CString::new(name).unwrap();
-
-        match value {
-            MoosMessageData::DOUBLE(as_f64) => unsafe {
-                MoosApp_getDoubleGlobalConfigParam(self, c_name.as_ptr(), as_f64)
-            },
-            MoosMessageData::STRING(as_string) => {
-                let s_value = CString::new("").unwrap();
-                let bytes = s_value.into_bytes_with_nul();
-                let cchars: Vec<i8> = bytes.iter().map(|&b| b as i8).collect();
-                let value: *mut c_char = cchars.clone().as_mut_ptr();
-                unsafe { MoosApp_getStringGlobalConfigParam(self, c_name.as_ptr(), value) };
-                if let Ok(value) = &unsafe { CStr::from_ptr(value) }.to_str() {
-                    as_string.clone_from(value);
-                    true
-                } else {
-                    false
+    fn convert_f64<T: Any + Clone>(&mut self, status: bool, data: f64) -> Option<T> {
+        match status {
+            true => {
+                let value_any = &data as &dyn Any;
+                match value_any.downcast_ref::<T>() {
+                    Some(value) => Some((*value).clone()),
+                    None => None,
                 }
             }
+            false => None,
         }
     }
 
-    // TODO: Update to return an Option<MoosMessageData> or Error
-    /// Retrieves an app specific configuration param.
-    pub fn app_param(&mut self, name: &str, value: &mut MoosMessageData) -> bool {
+    fn convert_str<T: Any + Clone>(&mut self, cstr: *const c_char) -> Option<T> {
+        let data = unsafe { CStr::from_ptr(cstr) }.to_str().unwrap();
+        if data.len() > 0 {
+            let value_any = &data as &dyn Any;
+            match value_any.downcast_ref::<T>() {
+                Some(value) => Some((*value).clone()),
+                None => None,
+            }
+        } else {
+            None
+        }
+    }
+
+    /// Retrieves a global configuration param.
+    pub fn global_param<T: Any + Clone>(&mut self, name: &str) -> Option<T> {
         let c_name = CString::new(name).unwrap();
 
-        match value {
-            MoosMessageData::DOUBLE(as_f64) => unsafe {
-                MoosApp_getDoubleAppConfigParam(self, c_name.as_ptr(), as_f64)
-            },
-            MoosMessageData::STRING(as_string) => {
-                let s_value = CString::new("").unwrap();
-                let bytes = s_value.into_bytes_with_nul();
-                let cchars: Vec<i8> = bytes.iter().map(|&b| b as i8).collect();
-                let value: *mut c_char = cchars.clone().as_mut_ptr();
-                unsafe { MoosApp_getStringAppConfigParam(self, c_name.as_ptr(), value) };
-                if let Ok(value) = &unsafe { CStr::from_ptr(value) }.to_str() {
-                    as_string.clone_from(value);
-                    true
-                } else {
-                    false
-                }
+        let type_id = TypeId::of::<T>();
+        let f64_type_id = TypeId::of::<f64>();
+        let str_type_id = TypeId::of::<&str>();
+
+        if type_id == f64_type_id {
+            let mut double: f64 = 0.0;
+            let double_ptr: *mut f64 = &mut double;
+            let result =
+                unsafe { MoosApp_getDoubleGlobalConfigParam(self, c_name.as_ptr(), double_ptr) };
+            self.convert_f64(result, double)
+        } else if type_id == str_type_id {
+            let cstr = unsafe { MoosApp_getStringGlobalConfigParam(self, c_name.as_ptr()) };
+            self.convert_str(cstr)
+        } else {
+            unreachable!()
+        }
+    }
+
+    /// Retrieves an app specific configuration param.
+    pub fn app_param<T: Any + Clone>(&mut self, name: &str) -> Option<T> {
+        let c_name = CString::new(name).unwrap();
+
+        let type_id = TypeId::of::<T>();
+        let f64_type_id = TypeId::of::<f64>();
+        let str_type_id = TypeId::of::<&str>();
+
+        if type_id == f64_type_id {
+            unsafe {
+                let mut double: f64 = 0.0;
+                let double_ptr: *mut f64 = &mut double;
+                let result = MoosApp_getDoubleAppConfigParam(self, c_name.as_ptr(), double_ptr);
+                self.convert_f64(result, double)
             }
+        } else if type_id == str_type_id {
+            let cstr = unsafe { MoosApp_getStringAppConfigParam(self, c_name.as_ptr()) };
+            self.convert_str(cstr)
+        } else {
+            unreachable!()
         }
     }
 }

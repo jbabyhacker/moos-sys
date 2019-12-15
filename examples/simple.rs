@@ -48,16 +48,16 @@ impl MoosInterface for DemoMoosApp {
         println!("onStartUp");
         let this_app = moos_sys::this::<DemoMoosApp>(app);
         let a: &mut moos_sys::MoosApp = this_app.app();
-        let mut food = moos_sys::MoosMessageData::DOUBLE(0.0);
-        let mut taste = moos_sys::MoosMessageData::STRING("");
-        let mut example = moos_sys::MoosMessageData::DOUBLE(0.0);
 
-        a.app_param("Food", &mut food);
-        a.app_param("Taste", &mut taste);
-        a.global_param("ExampleParam", &mut example);
+        let food: Option<f64> = a.app_param("Food");
+        let taste: Option<&str> = a.app_param("Taste");
+        let example: Option<f64> = a.global_param("ExampleParam");
+        let str_param: Option<&str> = a.global_param("CoolParam");
+
         println!("Food: {:?}", food);
         println!("Taste: {:?}", taste);
-        println!("Example: {:?}", example);
+        println!("ExampleParam: {:?}", example);
+        println!("CoolParam: {:?}", str_param);
 
         true
     }

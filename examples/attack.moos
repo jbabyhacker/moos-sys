@@ -1,7 +1,9 @@
 ExampleParam = 4
 
+CoolParam=asdf_1234
+
 ProcessConfig = eat
 {
   Food = 6
-  Taste = good
+  Taste = "good asdf"
 }

@@ -23,7 +23,7 @@ fn main() {
         .header("src/AppCastingMOOSApp_c.hpp")
         .clang_arg("-x")
         .clang_arg("c++")
-        .clang_arg("-std=c++11")
+        .clang_arg("-std=c++17")
         .no_copy("MoosApp")
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.

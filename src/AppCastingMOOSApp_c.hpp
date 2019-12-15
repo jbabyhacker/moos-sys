@@ -47,11 +47,11 @@ bool MoosApp_register(MoosApp *v, const char *s_var, const double d_interval);
 
 bool MoosApp_getDoubleGlobalConfigParam(MoosApp *v, const char *sName, double *d_var);
 
-bool MoosApp_getStringGlobalConfigParam(MoosApp *v, const char *sName, char *s_var);
+const char* MoosApp_getStringGlobalConfigParam(MoosApp *v, const char *sName);
 
 bool MoosApp_getDoubleAppConfigParam(MoosApp *v, const char *sName, double *d_var);
 
-bool MoosApp_getStringAppConfigParam(MoosApp *v, const char *sName, char *s_var);
+const char* MoosApp_getStringAppConfigParam(MoosApp *v, const char *sName);
 
 #ifdef __cplusplus
 };
