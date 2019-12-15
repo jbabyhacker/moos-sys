@@ -138,7 +138,7 @@ const char* MoosApp_getStringGlobalConfigParam(MoosApp *v, const char *sName) {
     std::string cppValue;
 
     bool result = v->m_MissionReader.GetValue(cppName, cppValue);
-    
+
     return result ? strdup(const_cast<char*>(cppValue.c_str())) : "\0";
 }
 
