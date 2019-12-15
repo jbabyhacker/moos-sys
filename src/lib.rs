@@ -130,6 +130,7 @@ impl MoosApp {
         unsafe { MoosApp_register(self, c_name.as_ptr(), interval) }
     }
 
+    // Helper function to convert to a generic type.
     fn convert_f64<T: Any + Clone>(&mut self, status: bool, data: f64) -> Option<T> {
         match status {
             true => {
@@ -143,6 +144,7 @@ impl MoosApp {
         }
     }
 
+    // Helper function to convert to a generic type.
     fn convert_str<T: Any + Clone>(&mut self, cstr: *const c_char) -> Option<T> {
         let data = unsafe { CStr::from_ptr(cstr) }.to_str().unwrap();
         if data.len() > 0 {
