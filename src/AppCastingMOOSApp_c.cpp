@@ -138,11 +138,8 @@ const char* MoosApp_getStringGlobalConfigParam(MoosApp *v, const char *sName) {
     std::string cppValue;
 
     bool result = v->m_MissionReader.GetValue(cppName, cppValue);
-    if(result) {
-        return strdup(const_cast<char*>(cppValue.c_str()));
-    } else {
-        return "\0";
-    }
+    
+    return result ? strdup(const_cast<char*>(cppValue.c_str())) : "\0";
 }
 
 bool MoosApp_getDoubleAppConfigParam(MoosApp *v, const char *sName, double *d_var) {
@@ -157,11 +154,7 @@ const char* MoosApp_getStringAppConfigParam(MoosApp *v, const char *sName) {
 
     bool result = v->m_MissionReader.GetConfigurationParam(cppName, cppValue);
 
-    if(result) {
-        return strdup(const_cast<char*>(cppValue.c_str()));
-    } else {
-        return "\0";
-    }
+    return result ? strdup(const_cast<char*>(cppValue.c_str())) : "\0";
 }
 
 }
