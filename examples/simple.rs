@@ -4,7 +4,7 @@ use std::os::raw::c_void;
 
 // Create your struct and include MoosApp as a member.
 pub struct DemoMoosApp {
-    app: *mut moos_sys::MoosApp,
+    base_app: *mut moos_sys::MoosApp,
     value: i32,
     data: HashMap<String, moos_sys::MoosMessageData>,
 }
@@ -13,7 +13,7 @@ pub struct DemoMoosApp {
 impl DemoMoosApp {
     pub fn new() -> Self {
         DemoMoosApp {
-            app: moos_sys::MoosApp::new::<DemoMoosApp>(),
+            base_app: moos_sys::MoosApp::new::<DemoMoosApp>(),
             value: 0,
             data: Default::default(),
         }
@@ -33,7 +33,7 @@ impl MoosInterface for DemoMoosApp {
         println!("Value: {}", this_app.value);
 
         this_app.do_work();
-        let base_app: &mut moos_sys::MoosApp = this_app.app();
+        let base_app: &mut moos_sys::MoosApp = this_app.base_app();
 
         base_app.notify(
             "X",
@@ -47,7 +47,7 @@ impl MoosInterface for DemoMoosApp {
     extern "C" fn on_start_up(app_ptr: *mut c_void) -> bool {
         println!("onStartUp");
         let this_app = moos_sys::this::<DemoMoosApp>(app_ptr);
-        let base_app: &mut moos_sys::MoosApp = this_app.app();
+        let base_app: &mut moos_sys::MoosApp = this_app.base_app();
 
         let food: Option<f64> = base_app.app_param("Food");
         let taste: Option<&str> = base_app.app_param("Taste");
@@ -65,7 +65,7 @@ impl MoosInterface for DemoMoosApp {
     extern "C" fn on_connect_to_server(app_ptr: *mut c_void) -> bool {
         println!("onConnectToServer");
         let this_app = moos_sys::this::<DemoMoosApp>(app_ptr);
-        let base_app: &mut moos_sys::MoosApp = this_app.app();
+        let base_app: &mut moos_sys::MoosApp = this_app.base_app();
         base_app.register("X", 0.0);
         base_app.register("Y", 0.0);
         true
@@ -80,8 +80,8 @@ impl MoosInterface for DemoMoosApp {
         true
     }
 
-    fn app(&mut self) -> &'static mut moos_sys::MoosApp {
-        moos_sys::to_app(self.app)
+    fn base_app(&mut self) -> &'static mut moos_sys::MoosApp {
+        moos_sys::to_app(self.base_app)
     }
 }
 

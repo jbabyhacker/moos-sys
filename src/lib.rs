@@ -33,7 +33,7 @@ pub trait MoosInterface {
     /// Implementer of `MoosInterface` is required to provide a pointer to `MoosApp`
     /// in the implementer's struct. Use the `to_app` helper function to populate
     /// this function.
-    fn app(&mut self) -> &'static mut MoosApp;
+    fn base_app(&mut self) -> &'static mut MoosApp;
 
     /// Called when new mail is received from the MOOSDB. It is then repackaged
     /// into a Rust type and passed into `on_new_mail`.
@@ -69,7 +69,7 @@ pub trait MoosInterface {
     where
         Self: std::marker::Sized,
     {
-        let app: &mut MoosApp = self.app();
+        let app: &mut MoosApp = self.base_app();
         app.set_target(self);
         app.run(name, mission.to_str().unwrap());
     }
