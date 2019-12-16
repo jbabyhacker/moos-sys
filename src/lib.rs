@@ -24,9 +24,15 @@ pub enum MoosMessageData {
 /// Callbacks that are called by MOOS. The implementer must have `*mut MoosApp` as a member
 /// of its struct.
 pub trait MoosInterface {
+    ///
     extern "C" fn iterate(app_ptr: *mut c_void) -> bool;
+
+    ///
     extern "C" fn on_start_up(app_ptr: *mut c_void) -> bool;
+
+    ///
     extern "C" fn on_connect_to_server(app_ptr: *mut c_void) -> bool;
+
     /// Called when new mail is received from the MOOSDB
     fn on_new_mail(app_ptr: *mut c_void, d: HashMap<String, MoosMessageData>) -> bool;
 
@@ -77,7 +83,10 @@ pub trait MoosInterface {
 
 impl MoosApp {
     /// Allocates a new MoosApp.
-    pub fn new<I: MoosInterface>() -> *mut Self {
+    pub fn new<I>() -> *mut Self
+    where
+        I: MoosInterface,
+    {
         let app: *mut MoosApp = unsafe { newMoosApp() };
 
         unsafe {
@@ -129,7 +138,10 @@ impl MoosApp {
     }
 
     /// Helper function to convert to a generic type.
-    fn convert_f64<T: Any + Clone>(&mut self, status: bool, data: f64) -> Option<T> {
+    fn convert_f64<T>(&mut self, status: bool, data: f64) -> Option<T>
+    where
+        T: Any + Clone,
+    {
         match status {
             true => {
                 let value_any = &data as &dyn Any;
@@ -143,7 +155,10 @@ impl MoosApp {
     }
 
     /// Helper function to convert to a generic type.
-    fn convert_str<T: Any + Clone>(&mut self, cstr: *const c_char) -> Option<T> {
+    fn convert_str<T>(&mut self, cstr: *const c_char) -> Option<T>
+    where
+        T: Any + Clone,
+    {
         let data = unsafe { CStr::from_ptr(cstr) }.to_str().unwrap();
         if data.len() > 0 {
             let value_any = &data as &dyn Any;
@@ -157,7 +172,10 @@ impl MoosApp {
     }
 
     /// Retrieves a global configuration param.
-    pub fn global_param<T: Any + Clone>(&mut self, name: &str) -> Option<T> {
+    pub fn global_param<T>(&mut self, name: &str) -> Option<T>
+    where
+        T: Any + Clone,
+    {
         let c_name = CString::new(name).unwrap();
 
         let type_id = TypeId::of::<T>();
@@ -179,7 +197,10 @@ impl MoosApp {
     }
 
     /// Retrieves an app specific configuration param.
-    pub fn app_param<T: Any + Clone>(&mut self, name: &str) -> Option<T> {
+    pub fn app_param<T>(&mut self, name: &str) -> Option<T>
+    where
+        T: Any + Clone,
+    {
         let c_name = CString::new(name).unwrap();
 
         let type_id = TypeId::of::<T>();
