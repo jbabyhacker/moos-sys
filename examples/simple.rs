@@ -27,32 +27,32 @@ impl DemoMoosApp {
 // Implement the MoosInterface for your struct, these are the callbacks
 // that are to be called.
 impl MoosInterface for DemoMoosApp {
-    extern "C" fn iterate(app: *mut c_void) -> bool {
-        let this_app = moos_sys::this::<DemoMoosApp>(app);
+    extern "C" fn iterate(app_ptr: *mut c_void) -> bool {
+        let this_app = moos_sys::this::<DemoMoosApp>(app_ptr);
 
         println!("Value: {}", this_app.value);
 
         this_app.do_work();
-        let a: &mut moos_sys::MoosApp = this_app.app();
+        let base_app: &mut moos_sys::MoosApp = this_app.app();
 
-        a.notify(
+        base_app.notify(
             "X",
             &moos_sys::MoosMessageData::DOUBLE(this_app.value as f64),
         );
-        a.notify("Y", &moos_sys::MoosMessageData::STRING("test"));
+        base_app.notify("Y", &moos_sys::MoosMessageData::STRING("test"));
 
         true
     }
 
-    extern "C" fn on_start_up(app: *mut c_void) -> bool {
+    extern "C" fn on_start_up(app_ptr: *mut c_void) -> bool {
         println!("onStartUp");
-        let this_app = moos_sys::this::<DemoMoosApp>(app);
-        let a: &mut moos_sys::MoosApp = this_app.app();
+        let this_app = moos_sys::this::<DemoMoosApp>(app_ptr);
+        let base_app: &mut moos_sys::MoosApp = this_app.app();
 
-        let food: Option<f64> = a.app_param("Food");
-        let taste: Option<&str> = a.app_param("Taste");
-        let example: Option<f64> = a.global_param("ExampleParam");
-        let str_param: Option<&str> = a.global_param("CoolParam");
+        let food: Option<f64> = base_app.app_param("Food");
+        let taste: Option<&str> = base_app.app_param("Taste");
+        let example: Option<f64> = base_app.global_param("ExampleParam");
+        let str_param: Option<&str> = base_app.global_param("CoolParam");
 
         println!("Food: {:?}", food);
         println!("Taste: {:?}", taste);
@@ -62,12 +62,12 @@ impl MoosInterface for DemoMoosApp {
         true
     }
 
-    extern "C" fn on_connect_to_server(app: *mut c_void) -> bool {
+    extern "C" fn on_connect_to_server(app_ptr: *mut c_void) -> bool {
         println!("onConnectToServer");
-        let this_app = moos_sys::this::<DemoMoosApp>(app);
-        let d: &mut moos_sys::MoosApp = this_app.app();
-        d.register("X", 0.0);
-        d.register("Y", 0.0);
+        let this_app = moos_sys::this::<DemoMoosApp>(app_ptr);
+        let base_app: &mut moos_sys::MoosApp = this_app.app();
+        base_app.register("X", 0.0);
+        base_app.register("Y", 0.0);
         true
     }
 

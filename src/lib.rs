@@ -1,4 +1,4 @@
-//! Interface code to C++ binding. All unsafe code is isolated here.
+//! Interface code to C++ binding. All unsafe code is located here.
 
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
@@ -24,11 +24,11 @@ pub enum MoosMessageData {
 /// Callbacks that are called by MOOS. The implementer must have `*mut MoosApp` as a member
 /// of its struct.
 pub trait MoosInterface {
-    extern "C" fn iterate(app: *mut c_void) -> bool;
-    extern "C" fn on_start_up(app: *mut c_void) -> bool;
-    extern "C" fn on_connect_to_server(app: *mut c_void) -> bool;
+    extern "C" fn iterate(app_ptr: *mut c_void) -> bool;
+    extern "C" fn on_start_up(app_ptr: *mut c_void) -> bool;
+    extern "C" fn on_connect_to_server(app_ptr: *mut c_void) -> bool;
     /// Called when new mail is received from the MOOSDB
-    fn on_new_mail(app: *mut c_void, d: HashMap<String, MoosMessageData>) -> bool;
+    fn on_new_mail(app_ptr: *mut c_void, d: HashMap<String, MoosMessageData>) -> bool;
 
     /// Implementer of `MoosInterface` is required to provide a pointer to `MoosApp`
     /// in the implementer's struct. Use the `to_app` helper function to populate
@@ -37,14 +37,14 @@ pub trait MoosInterface {
 
     /// Called when new mail is received from the MOOSDB. It is then repackaged
     /// into a Rust type and passed into `on_new_mail`.
-    extern "C" fn on_new_raw_mail(app: *mut c_void, mail: *const Envelope, size: u32) -> bool {
+    extern "C" fn on_new_raw_mail(app_ptr: *mut c_void, mail: *const Envelope, size: u32) -> bool {
         let envelopes: &[Envelope] =
             unsafe { slice::from_raw_parts(mail as *const Envelope, size as usize) };
 
-        let mut d = HashMap::new();
+        let mut data = HashMap::new();
 
         for envelope in envelopes {
-            d.insert(
+            data.insert(
                 unsafe { CStr::from_ptr(envelope.name) }
                     .to_str()
                     .unwrap()
@@ -61,7 +61,7 @@ pub trait MoosInterface {
             );
         }
 
-        Self::on_new_mail(app, d)
+        Self::on_new_mail(app_ptr, data)
     }
 
     /// Runs the app with the given `name` and `mission` file.
@@ -74,8 +74,6 @@ pub trait MoosInterface {
         app.run(name, mission.to_str().unwrap());
     }
 }
-
-trait Asdf {}
 
 impl MoosApp {
     /// Allocates a new MoosApp.
@@ -130,7 +128,7 @@ impl MoosApp {
         unsafe { MoosApp_register(self, c_name.as_ptr(), interval) }
     }
 
-    // Helper function to convert to a generic type.
+    /// Helper function to convert to a generic type.
     fn convert_f64<T: Any + Clone>(&mut self, status: bool, data: f64) -> Option<T> {
         match status {
             true => {
@@ -144,7 +142,7 @@ impl MoosApp {
         }
     }
 
-    // Helper function to convert to a generic type.
+    /// Helper function to convert to a generic type.
     fn convert_str<T: Any + Clone>(&mut self, cstr: *const c_char) -> Option<T> {
         let data = unsafe { CStr::from_ptr(cstr) }.to_str().unwrap();
         if data.len() > 0 {
@@ -209,13 +207,13 @@ fn get_app<FromType, ToType>(app: *mut FromType) -> &'static mut ToType {
 }
 
 /// Obtains the struct that implements `MoosInterface`.
-pub fn this<ToType>(app: *mut c_void) -> &'static mut ToType {
-    get_app::<c_void, ToType>(app)
+pub fn this<ToType>(app_ptr: *mut c_void) -> &'static mut ToType {
+    get_app::<c_void, ToType>(app_ptr)
 }
 
 /// Obtains `MoosApp` from a `MoosApp` member.
-pub fn to_app(app: *mut MoosApp) -> &'static mut MoosApp {
-    get_app::<MoosApp, MoosApp>(app)
+pub fn to_app(base_ptr: *mut MoosApp) -> &'static mut MoosApp {
+    get_app::<MoosApp, MoosApp>(base_ptr)
 }
 
 impl Drop for MoosApp {
