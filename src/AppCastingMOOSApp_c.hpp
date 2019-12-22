@@ -23,6 +23,8 @@ typedef bool (*rust_bool_void_star_callback)(void *callback_target);
 
 typedef bool (*on_new_mail_callback)(void *callback_target, const Envelope *mail, unsigned int size);
 
+typedef const char * (*build_report_callback)(void *callback_target);
+
 MoosApp *newMoosApp();
 
 void deleteMoosApp(MoosApp *v);
@@ -36,6 +38,8 @@ void MoosApp_setOnStartUpCallback(MoosApp *v, rust_bool_void_star_callback callb
 void MoosApp_setOnConnectToServerCallback(MoosApp *v, rust_bool_void_star_callback callback);
 
 void MoosApp_setOnNewMailCallback(MoosApp *v, on_new_mail_callback callback);
+
+void MoosApp_setBuildReportCallback(MoosApp *v, build_report_callback callback);
 
 bool MoosApp_run(MoosApp *v, const char *sName, const char *mission_file);
 

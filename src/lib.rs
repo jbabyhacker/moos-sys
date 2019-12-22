@@ -28,13 +28,13 @@ pub trait MoosInterface {
     extern "C" fn iterate(app_ptr: *mut c_void) -> bool;
 
     ///
-    extern "C" fn on_start_up(app_ptr: *mut c_void) -> bool;
-
-    ///
     extern "C" fn on_connect_to_server(app_ptr: *mut c_void) -> bool;
 
+    ///
+    extern "C" fn on_start_up(app_ptr: *mut c_void) -> bool;
+
     /// Called when new mail is received from the MOOSDB
-    fn on_new_mail(app_ptr: *mut c_void, d: HashMap<String, MoosMessageData>) -> bool;
+    fn on_new_mail(app_ptr: *mut c_void, data: HashMap<String, MoosMessageData>) -> bool;
 
     /// Implementer of `MoosInterface` is required to provide a pointer to `MoosApp`
     /// in the implementer's struct. Use the `to_app` helper function to populate
@@ -70,6 +70,8 @@ pub trait MoosInterface {
         Self::on_new_mail(app_ptr, data)
     }
 
+    extern "C" fn on_build_report(app_ptr: *mut c_void) -> *const c_char;
+
     /// Runs the app with the given `name` and `mission` file.
     fn run(&mut self, name: &str, mission: &path::Path)
     where
@@ -94,6 +96,7 @@ impl MoosApp {
             MoosApp_setOnStartUpCallback(app, Some(I::on_start_up));
             MoosApp_setOnConnectToServerCallback(app, Some(I::on_connect_to_server));
             MoosApp_setOnNewMailCallback(app, Some(I::on_new_raw_mail));
+            MoosApp_setBuildReportCallback(app, Some(I::on_build_report));
         }
 
         app
@@ -236,6 +239,13 @@ pub fn this<ToType>(app_ptr: *mut c_void) -> &'static mut ToType {
 pub fn to_app(base_ptr: *mut MoosApp) -> &'static mut MoosApp {
     get_app::<MoosApp, MoosApp>(base_ptr)
 }
+
+//pub fn resolve<ToType>(app_ptr: *mut c_void) -> (&'static mut ToType, &'static mut MoosApp) {
+//    let this_app : &mut ToType = this(app_ptr);
+//    let base_app: &mut MoosApp = this_app.base_app();
+//
+//    (this_app, base_app)
+//}
 
 impl Drop for MoosApp {
     fn drop(&mut self) {

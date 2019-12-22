@@ -14,6 +14,7 @@ public:
     rust_bool_void_star_callback m_onStartUpCallback = nullptr;
     rust_bool_void_star_callback m_onConnectToServerCallback = nullptr;
     on_new_mail_callback m_onNewMailCallback = nullptr;
+    build_report_callback  m_buildReportCallback = nullptr;
 
 protected:
     bool Iterate() override {
@@ -73,6 +74,17 @@ protected:
         return false;
     }
 
+    bool buildReport() {
+        if(m_buildReportCallback) {
+            const char *c_report = m_buildReportCallback(m_callbackTarget);
+            std::string report(c_report);
+            m_msgs << report;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 private:
 
 };
@@ -104,6 +116,10 @@ void MoosApp_setOnConnectToServerCallback(MoosApp *v, rust_bool_void_star_callba
 
 void MoosApp_setOnNewMailCallback(MoosApp *v, on_new_mail_callback callback) {
     v->m_onNewMailCallback = callback;
+}
+
+void MoosApp_setBuildReportCallback(MoosApp *v, build_report_callback callback) {
+    v->m_buildReportCallback = callback;
 }
 
 bool MoosApp_notifyDouble(MoosApp *v, const char *s_var, const double d_val) {

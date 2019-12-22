@@ -1,6 +1,8 @@
 use moos_sys::MoosInterface;
 use std::collections::HashMap;
-use std::os::raw::c_void;
+use std::os::raw::{c_void, c_char};
+use std::{path, mem};
+use std::ffi::CString;
 
 // Create your struct and include MoosApp as a member.
 pub struct DemoMoosApp {
@@ -30,7 +32,9 @@ impl MoosInterface for DemoMoosApp {
     extern "C" fn iterate(app_ptr: *mut c_void) -> bool {
         let this_app = moos_sys::this::<DemoMoosApp>(app_ptr);
 
+        this_app.value += 1;
         println!("Value: {}", this_app.value);
+
 
         this_app.do_work();
         let base_app: &mut moos_sys::MoosApp = this_app.base_app();
@@ -71,17 +75,26 @@ impl MoosInterface for DemoMoosApp {
         true
     }
 
-    fn on_new_mail(app: *mut c_void, d: HashMap<String, moos_sys::MoosMessageData>) -> bool {
-        let this_app = moos_sys::this::<DemoMoosApp>(app);
-        this_app.data = d;
+    fn on_new_mail(app_ptr: *mut c_void, data: HashMap<String, moos_sys::MoosMessageData>) -> bool {
+        let this_app = moos_sys::this::<DemoMoosApp>(app_ptr);
+        this_app.data = data;
 
         println!("setMail - {:?}", this_app.data);
-        this_app.value += 1;
+
         true
     }
 
     fn base_app(&mut self) -> &'static mut moos_sys::MoosApp {
         moos_sys::to_app(self.base_app)
+    }
+
+    extern "C" fn on_build_report(app_ptr: *mut c_void) -> *const c_char {
+        let this_app = moos_sys::this::<DemoMoosApp>(app_ptr);
+        let report = CString::new(format!("My report {}", this_app.value)).unwrap();
+        let c_report = report.as_ptr();
+        mem::forget(report);
+
+        c_report
     }
 }
 
