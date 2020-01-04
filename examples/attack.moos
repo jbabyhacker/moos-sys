@@ -1,6 +1,7 @@
 ExampleParam = 4
 
 CoolParam=asdf_1234
+Community = nozzle
 
 ProcessConfig = eat
 {

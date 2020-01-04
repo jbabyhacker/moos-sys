@@ -1,8 +1,8 @@
 use moos_sys::MoosInterface;
 use std::collections::HashMap;
-use std::os::raw::{c_void, c_char};
-use std::{path, mem};
 use std::ffi::CString;
+use std::os::raw::{c_char, c_void};
+use std::{mem, path};
 
 // Create your struct and include MoosApp as a member.
 pub struct DemoMoosApp {
@@ -34,7 +34,6 @@ impl MoosInterface for DemoMoosApp {
 
         this_app.value += 1;
         println!("Value: {}", this_app.value);
-
 
         this_app.do_work();
         let base_app: &mut moos_sys::MoosApp = this_app.base_app();
