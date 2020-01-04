@@ -127,7 +127,7 @@ impl MoosApp {
                 MoosApp_notifyDouble(self, c_name.as_ptr(), *as_f64)
             },
             MoosMessageData::STRING(as_string) => {
-                let c_value = CString::new(as_string.clone()).unwrap();
+                let c_value = CString::new(*as_string).unwrap();
                 unsafe { MoosApp_notifyString(self, c_name.as_ptr(), c_value.as_ptr()) }
             }
         }
@@ -145,15 +145,14 @@ impl MoosApp {
     where
         T: Any + Clone,
     {
-        match status {
-            true => {
-                let value_any = &data as &dyn Any;
-                match value_any.downcast_ref::<T>() {
-                    Some(value) => Some((*value).clone()),
-                    None => None,
-                }
+        if status {
+            let value_any = &data as &dyn Any;
+            match value_any.downcast_ref::<T>() {
+                Some(value) => Some((*value).clone()),
+                None => None,
             }
-            false => None,
+        } else {
+            None
         }
     }
 
@@ -163,7 +162,7 @@ impl MoosApp {
         T: Any + Clone,
     {
         let data = unsafe { CStr::from_ptr(cstr) }.to_str().unwrap();
-        if data.len() > 0 {
+        if !data.is_empty() {
             let value_any = &data as &dyn Any;
             match value_any.downcast_ref::<T>() {
                 Some(value) => Some((*value).clone()),
