@@ -1,8 +1,8 @@
 use moos_sys::MoosInterface;
 use std::collections::HashMap;
 use std::ffi::CString;
+use std::mem;
 use std::os::raw::{c_char, c_void};
-use std::{mem, path};
 
 // Create your struct and include MoosApp as a member.
 pub struct DemoMoosApp {
