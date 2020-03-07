@@ -11,15 +11,17 @@ use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::fmt::Debug;
 use std::os::raw::{c_char, c_void};
-use std::{path, slice};
+use std::{path, slice, marker};
 
 /// Type to populate when sending data to the MOOSDB as well as populated when
 /// mail is received from the MOOSDB.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum MoosMessageData {
     DOUBLE(f64),
     STRING(&'static str),
 }
+
+// TODO: Implement logging for moos app
 
 /// Callbacks that are called by MOOS. The implementer must have `*mut MoosApp` as a member
 /// of its struct.
@@ -229,22 +231,26 @@ fn get_app<FromType, ToType>(app: *mut FromType) -> &'static mut ToType {
     unsafe { &mut *(app as *mut ToType) }
 }
 
-/// Obtains the struct that implements `MoosInterface`.
-pub fn this<ToType>(app_ptr: *mut c_void) -> &'static mut ToType {
-    get_app::<c_void, ToType>(app_ptr)
-}
-
 /// Obtains `MoosApp` from a `MoosApp` member.
 pub fn to_app(base_ptr: *mut MoosApp) -> &'static mut MoosApp {
     get_app::<MoosApp, MoosApp>(base_ptr)
 }
 
-//pub fn resolve<ToType>(app_ptr: *mut c_void) -> (&'static mut ToType, &'static mut MoosApp) {
-//    let this_app : &mut ToType = this(app_ptr);
-//    let base_app: &mut MoosApp = this_app.base_app();
-//
-//    (this_app, base_app)
-//}
+/// Obtains the struct that implements `MoosInterface`.
+fn this<ToType>(app_ptr: *mut c_void) -> &'static mut ToType
+where
+    ToType: MoosInterface,
+{
+    get_app::<c_void, ToType>(app_ptr)
+}
+
+///
+pub fn resolve<ToType>(app_ptr: *mut c_void) -> (&'static mut ToType, &'static mut MoosApp)
+where
+    ToType: MoosInterface,
+{
+    (this::<ToType>(app_ptr), this::<ToType>(app_ptr).base_app())
+}
 
 impl Drop for MoosApp {
     fn drop(&mut self) {

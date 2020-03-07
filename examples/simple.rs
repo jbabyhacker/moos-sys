@@ -30,13 +30,12 @@ impl DemoMoosApp {
 // that are to be called.
 impl MoosInterface for DemoMoosApp {
     extern "C" fn iterate(app_ptr: *mut c_void) -> bool {
-        let this_app = moos_sys::this::<DemoMoosApp>(app_ptr);
+        let (this_app, base_app) = moos_sys::resolve::<DemoMoosApp>(app_ptr);
 
         this_app.value += 1;
         println!("Value: {}", this_app.value);
 
         this_app.do_work();
-        let base_app: &mut moos_sys::MoosApp = this_app.base_app();
 
         base_app.notify(
             "X",
@@ -49,8 +48,7 @@ impl MoosInterface for DemoMoosApp {
 
     extern "C" fn on_start_up(app_ptr: *mut c_void) -> bool {
         println!("onStartUp");
-        let this_app = moos_sys::this::<DemoMoosApp>(app_ptr);
-        let base_app: &mut moos_sys::MoosApp = this_app.base_app();
+        let (_this_app, base_app) = moos_sys::resolve::<DemoMoosApp>(app_ptr);
 
         let food: Option<f64> = base_app.app_param("Food");
         let taste: Option<&str> = base_app.app_param("Taste");
@@ -67,15 +65,15 @@ impl MoosInterface for DemoMoosApp {
 
     extern "C" fn on_connect_to_server(app_ptr: *mut c_void) -> bool {
         println!("onConnectToServer");
-        let this_app = moos_sys::this::<DemoMoosApp>(app_ptr);
-        let base_app: &mut moos_sys::MoosApp = this_app.base_app();
+        let (_this_app, base_app) = moos_sys::resolve::<DemoMoosApp>(app_ptr);
+
         base_app.register("X", 0.0);
         base_app.register("Y", 0.0);
         true
     }
 
     fn on_new_mail(app_ptr: *mut c_void, data: HashMap<String, moos_sys::MoosMessageData>) -> bool {
-        let this_app = moos_sys::this::<DemoMoosApp>(app_ptr);
+        let (this_app, _base_app) = moos_sys::resolve::<DemoMoosApp>(app_ptr);
         this_app.data = data;
 
         println!("setMail - {:?}", this_app.data);
@@ -88,7 +86,7 @@ impl MoosInterface for DemoMoosApp {
     }
 
     extern "C" fn on_build_report(app_ptr: *mut c_void) -> *const c_char {
-        let this_app = moos_sys::this::<DemoMoosApp>(app_ptr);
+        let (this_app, _base_app) = moos_sys::resolve::<DemoMoosApp>(app_ptr);
         let report = CString::new(format!("My report {}", this_app.value)).unwrap();
         let c_report = report.as_ptr();
         mem::forget(report);
