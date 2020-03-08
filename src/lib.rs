@@ -11,7 +11,7 @@ use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::fmt::Debug;
 use std::os::raw::{c_char, c_void};
-use std::{path, slice, marker};
+use std::{path, slice};
 
 /// Type to populate when sending data to the MOOSDB as well as populated when
 /// mail is received from the MOOSDB.
